@@ -262,9 +262,9 @@ class DatabaseScheduler(Scheduler):
         )
         exclude_hours = self.get_excluded_hours_for_crontab_tasks()
         exclude_cron_tasks_query = Q(
-            crontab__isnull=False, crontab__hour__in=exclude_hours
+            crontab__isnull=False, utc_hour__in=exclude_hours
         )
-        for model in self.Model.objects.enabled().exclude(
+        for model in self.Model.objects.enabled().with_crontab_utc_hour_minute().exclude(
             exclude_clock_tasks_query | exclude_cron_tasks_query
         ):
             try:
@@ -403,7 +403,8 @@ class DatabaseScheduler(Scheduler):
         ]
 
         # Get current, next, and previous hours
-        current_time = timezone.localtime(now())
+        # in UTC timezone because crontab will be compared in UTC
+        current_time = timezone.localtime(datetime.datetime.now(datetime.timezone.utc))
         current_hour = current_time.hour
         next_hour = (current_hour + 1) % 24
         previous_hour = (current_hour - 1) % 24

@@ -307,6 +307,8 @@ class CrontabSchedule(models.Model):
             'Timezone to Run the Cron Schedule on. Default is UTC.'),
     )
 
+    objects = querysets.CrontabScheduleQuerySet.as_manager()
+
     class Meta:
         """Table information."""
 
